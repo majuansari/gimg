@@ -10,17 +10,12 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
-	"crypto/rand"
 	b64 "encoding/base64"
-	"io"
 )
 
 // Encrypts text with the passphrase
-func Encrypt(text string, passphrase string) string {
-	salt := make([]byte, 8)
-	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		panic(err.Error())
-	}
+func Encrypt(text, passphrase, saltText string) string {
+	salt := saltText
 
 	key, iv := __DeriveKeyAndIv(passphrase, string(salt))
 
@@ -34,17 +29,17 @@ func Encrypt(text string, passphrase string) string {
 	encrypted := make([]byte, len(pad))
 	ecb.CryptBlocks(encrypted, pad)
 
-	return b64.StdEncoding.EncodeToString([]byte("Salted__" + string(salt) + string(encrypted)))
+	return b64.RawURLEncoding.EncodeToString([]byte(string(salt) + string(encrypted)))
 }
 
 // Decrypts encrypted text with the passphrase
-func Decrypt(encrypted string, passphrase string) string {
-	ct, _ := b64.StdEncoding.DecodeString(encrypted)
-	if len(ct) < 16 || string(ct[:8]) != "Salted__" {
+func Decrypt(encrypted, passphrase, saltText string) string {
+	ct, _ := b64.RawURLEncoding.DecodeString(encrypted)
+	if len(ct) < 16 || string(ct[:16]) != saltText {
 		return ""
 	}
 
-	salt := ct[8:16]
+	salt := ct[0:16]
 	ct = ct[16:]
 	key, iv := __DeriveKeyAndIv(passphrase, string(salt))
 

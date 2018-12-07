@@ -22,7 +22,7 @@ func GenerateBarcode(code string, width float64, height float64, dpr int) (strin
 	}
 
 	//encodeBarcodeText(code)
-	//fmt.Println("Generating Codabar for : ", code)
+	//fmt.Println("Generating Codabar for : ",encodeBarcodeText code)
 	var bcode barcode.Barcode
 	var barcodeWidth float64
 	var barcodeHeight float64
@@ -30,7 +30,8 @@ func GenerateBarcode(code string, width float64, height float64, dpr int) (strin
 
 	aspectRatio = 4.385
 
-	labelHeight := 16 * dpr
+	labelHeight := int(height*.3) * dpr
+	fmt.Println(labelHeight, height*.25)
 
 	bcode, err := code39.Encode(code, false, false)
 	if err != nil {
@@ -40,7 +41,7 @@ func GenerateBarcode(code string, width float64, height float64, dpr int) (strin
 	barcodeWidth, barcodeHeight = helpers.ValidateOutputWidthAndHeight(width, aspectRatio, height)
 
 	intBarcodeWidth := int(barcodeWidth) * dpr
-	intBarcodeHeight := (int(barcodeHeight) - labelHeight) * dpr
+	intBarcodeHeight := (int(barcodeHeight) * dpr) - labelHeight
 
 	bcode, err = barcode.Scale(bcode, intBarcodeWidth, intBarcodeHeight)
 
@@ -55,7 +56,7 @@ func GenerateBarcode(code string, width float64, height float64, dpr int) (strin
 	//png.Encode(file, bcode)
 
 	// create a new blank image with white background
-	blankImage := imaging.New(intBarcodeWidth, intBarcodeHeight+(labelHeight*dpr), color.NRGBA{255, 255, 255, 255})
+	blankImage := imaging.New(intBarcodeWidth, intBarcodeHeight+(labelHeight), color.NRGBA{255, 255, 255, 255})
 	newImgWithBarcode := imaging.Paste(blankImage, bcode, image.Pt(0, 0))
 
 	gc := gg.NewContextForImage(newImgWithBarcode)
@@ -65,8 +66,9 @@ func GenerateBarcode(code string, width float64, height float64, dpr int) (strin
 	gc.SetRGB(0, 0, 0)
 
 	//@todo check the typecasting
-	fontPoints := 24
-	if err := gc.LoadFontFace("assets/fonts/SofiaPro-Bold.ttf", float64(fontPoints*(dpr))); err != nil {
+	fontPoints := float64(labelHeight)
+
+	if err := gc.LoadFontFace("assets/fonts/SofiaPro-Bold.ttf", fontPoints); err != nil {
 		panic(err)
 	}
 	gc.DrawStringAnchored(code, float64(intBarcodeWidth)/2, float64(intBarcodeHeight)+(20*float64(dpr)), 0.5, 0.5)

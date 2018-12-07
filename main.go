@@ -38,7 +38,7 @@ func handleRequest(w http.ResponseWriter, r *http.Request) {
 		}
 		width, height := getWidthAndHeight(int(intDpr), config.BarcodePresets[presetKey])
 
-		code := crypto.Decrypt(pathSegments[2], os.Getenv("CRYPTO_PASS"))
+		code := crypto.Decrypt(pathSegments[2], os.Getenv("CRYPTO_PASS"), os.Getenv("CRYPTO_SALT"))
 		response, err = barcode.GenerateBarcode(code, width, height, int(intDpr))
 		mimeKey = "image/jpeg"
 	} else {

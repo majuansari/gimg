@@ -2,8 +2,8 @@ package image
 
 import (
 	"errors"
-	"gimg/clilliput"
-	"gimg/helpers"
+	"github.com/majuansari/gimg/clilliput"
+	"github.com/majuansari/gimg/helpers"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
